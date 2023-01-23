@@ -24,18 +24,18 @@ class MarkedLine(VMobject):
         the parameters to pass on
     """
 
-    def __init__(self, start=LEFT, end=RIGHT, cong_mark_num: int = 0, parrel_mark_num: int = 0, length: float = 0.125, mark_origin: float = 0.5, mark_layout_width: float = 0.25, **kwargs):
+    def __init__(self, line: Line, cong_mark_num: int = 0, parrel_mark_num: int = 0, length: float = 0.125, mark_origin: float = 0.5, mark_layout_width: float = 0.25, **kwargs):
         self.cong_mark_num = cong_mark_num
         self.parrel_mark_num = parrel_mark_num
         self.mark_length = length
         self.mark_origin = mark_origin
         self.mark_layout_width = mark_layout_width
+        self.line = line.copy()
 
         VMobject.__init__(self, **kwargs)
 
-        main_line = Line(start, end)
-        self.add(main_line)
-        angle_main_line = main_line.get_angle()
+        self.add(self.line)
+        angle_main_line = self.line.get_angle()
 
         # number of marks
         num_ten_ticks = int(cong_mark_num/10)
@@ -53,6 +53,8 @@ class MarkedLine(VMobject):
             mark_spacing = mark_layout_width / num_marks
 
             # start + start_to_next_mark = location of first mark at first
+            start = self.line.get_start()
+            end = self.line.get_end()
             start_to_next_mark = (end - start)*(mark_origin - mark_spacing*(num_marks-1)/2)
             mark_width = 3
             for i in range(num_ten_ticks):
@@ -155,3 +157,15 @@ class MarkedLine(VMobject):
 
     def rot(self, angle):
         return np.array([[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
+    
+    def get_length(self):
+        return self.line.get_length()
+    
+    def get_start(self):
+        return self.line.get_start()
+    
+    def get_end(self):
+        return self.line.get_end()
+
+    def get_unit_vector(self):
+        return self.line.get_unit_vector()

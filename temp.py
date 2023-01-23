@@ -1,10 +1,12 @@
 from manim import *
 from shapes import MarkedLine
+from constructions import point_to_line
 
 class Temp(Scene):
     def construct(self):
-        line = Line()
-        self.play(Create(line))
+        point_A = Dot()
+        line_BC = Line(start=1*UP + 1*RIGHT, end=-2*UP + 4*RIGHT)
+        self.play(Create(point_A), Create(line_BC))
         self.wait()
-        self.play(Transform(line, MarkedLine(cong_mark_num=6, parrel_mark_num=10)))
+        point_to_line(self, point_A, line_BC, 1, True, 3)
         self.wait()
