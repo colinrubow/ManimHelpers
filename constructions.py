@@ -291,3 +291,46 @@ def bisect_line(s: Scene, line_AB: Line, positive_solution: bool = True, time: f
     s.play(FadeOut(triangle_ABC[0], triangle_ABC[1]))
     return bisector
 
+def perpendicular_from_point_on_line(s: Scene, line_AB: Line, point_C: Dot, l: float = -1, positive_solution: bool = True, time: float = 12) -> Line:
+    """From a point on a line, creates a perpendicular line using I.11 in 12 operations
+    
+    Parameters
+    ----------
+    s :
+        The Scene
+    line_AB :
+        The line
+    point_C :
+        The point
+    l :
+        The length of the perpendicular line. If -1 then makes a general perpendicular
+    positive_solution :
+        The orientation of the perpendicular
+    time :
+        How long it takes
+    
+    Returns
+    -------
+    The perpendicular Line
+    """
+    dt = time/12
+
+    line_AC = Line(line_AB.get_start(), point_C.get_center())
+    point_D = Dot(line_AB.get_start() + line_AC.get_unit_vector()*0.5*line_AC.get_length())
+    s.play(Create(point_D), run_time=dt)
+
+    line_CD = Line(point_C.get_center(), point_D.get_center())
+    line_CB = Line(point_C.get_center(), line_AB.get_end())
+    mline_CE, point_E = cut_line_to_length(s, line_CB, line_CD, cong_num=0, time=dt*3)
+
+    line_DE = Line(point_D.get_center(), point_E.get_center())
+    triangle_DEF = equilateral_triangle(s, line_DE, cong_num=0, positive_solution=positive_solution, time=dt*6)
+
+    line_CF = Line(point_C.get_center(), triangle_DEF[0].get_end())
+    if l != -1:
+        line_CF = Line(point_C.get_center(), point_C.get_center() + l*line_CF.get_unit_vector())
+    s.play(Create(line_CF), run_time=dt)
+
+    s.play(FadeOut(point_D, triangle_DEF, point_E), run_time=dt)
+
+    return line_CF
