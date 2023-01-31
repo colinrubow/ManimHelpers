@@ -169,3 +169,6 @@ class MarkedLine(VMobject):
 
     def get_unit_vector(self):
         return self.line.get_unit_vector()
+    
+    def get_angle(self):
+        return self.line.get_angle()
