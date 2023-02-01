@@ -334,3 +334,55 @@ def perpendicular_from_point_on_line(s: Scene, line_AB: Line, point_C: Dot, l: f
     s.play(FadeOut(point_D, triangle_DEF, point_E), run_time=dt)
 
     return line_CF
+
+def perpendicular_from_point_off_line(s: Scene, line_AB: Line, point_C: Dot, time: float = 25) -> Line:
+    """Given a line and point not on the line, will drop a perpendicular using I.12 in 25 operations
+    
+    Parameters
+    ----------
+    s :
+        The Scene
+    line_AB :
+        The line to drop the perpendicular onto
+    point_C :
+        The point to drop the perpendicular from
+    time :
+        How long to take
+
+    Returns
+    -------
+    The perpendicular Line
+    """
+    dt = time/25
+
+    line_CZ = Line(point_C.get_center(), line_AB.get_start() + 0.5*line_AB.get_length()*line_AB.get_unit_vector())
+    line_CD = Line(point_C.get_center(), line_CZ.get_end() + line_CZ.get_unit_vector())
+    point_D = Dot(line_CD.get_end())
+    s.play(Create(point_D), run_time=dt)
+
+    circle_EFG = Circle(line_CD.get_length(), color=WHITE).shift(point_C.get_center())
+    s.play(Create(circle_EFG), run_time=dt)
+
+    # find intersection
+    m = line_AB.get_slope()
+    b = -m*line_AB.get_start()[0] + line_AB.get_start()[1]
+    r = line_CD.get_length()
+    y_c = point_C.get_center()[1]
+    x_c = point_C.get_center()[0]
+    zeta = b - y_c
+
+    x_1 = (-2*m*zeta + 2*x_c + np.sqrt((2*m*zeta - 2*x_c)**2 - 4*(m**2 + 1)*(zeta**2 + x_c**2 - r**2)))/2/(m**2 + 1)
+    x_2 = (-2*m*zeta + 2*x_c - np.sqrt((2*m*zeta - 2*x_c)**2 - 4*(m**2 + 1)*(zeta**2 + x_c**2 - r**2)))/2/(m**2 + 1)
+    y_1 = m*x_1 + b
+    y_2 = m*x_2 + b
+
+    line_GE = Line(np.array([x_1, y_1, 0]), np.array([x_2, y_2, 0]))
+    line_bisector_GE = bisect_line(s, line_GE, True, 20*dt)
+    point_H = Dot(line_bisector_GE.get_end())
+    s.play(FadeOut(line_bisector_GE), Create(point_H), run_time=dt)
+
+    line_CH = Line(point_C.get_center(), point_H.get_center())
+    s.play(Create(line_CH), run_time=dt)
+
+    s.play(FadeOut(point_H, circle_EFG, point_D), run_time=dt)
+    return line_CH
