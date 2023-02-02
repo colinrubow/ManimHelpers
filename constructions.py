@@ -260,7 +260,7 @@ def bisect_angle(s: Scene, line_AB: Line, line_AC: Line, l: float = 1, time: flo
     s.play(FadeOut(point_D, point_E, line_DE, triangle_DEF), run_time=dt)
     return line_AF_prime
 
-def bisect_line(s: Scene, line_AB: Line, positive_solution: bool = True, time: float = 20) -> Line:
+def bisect_line(s: Scene, line_AB: Line, positive_solution: bool = True, time: float = 20) -> Dot:
     """Draws a perpendicular line off of line_AB using I.10 in 20 operations
     
     Parameters
@@ -277,7 +277,7 @@ def bisect_line(s: Scene, line_AB: Line, positive_solution: bool = True, time: f
     
     Returns
     -------
-    The bisecting Line
+    The Dot at the midpoint
     """
     dt = time / 20
     triangle_ABC = equilateral_triangle(s, line_AB, 0, positive_solution, dt*6)
@@ -288,8 +288,9 @@ def bisect_line(s: Scene, line_AB: Line, positive_solution: bool = True, time: f
         np.sqrt(line_AB.get_length()**2 - (line_AB.get_length()/2)**2),
         dt*13
     )
-    s.play(FadeOut(triangle_ABC[0], triangle_ABC[1]))
-    return bisector
+    point_midpoint = Dot(bisector.get_end())
+    s.play(FadeOut(bisector, triangle_ABC[0], triangle_ABC[1]), Create(point_midpoint))
+    return point_midpoint
 
 def perpendicular_from_point_on_line(s: Scene, line_AB: Line, point_C: Dot, l: float = -1, positive_solution: bool = True, time: float = 12) -> Line:
     """From a point on a line, creates a perpendicular line using I.11 in 12 operations
