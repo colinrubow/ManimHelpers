@@ -387,3 +387,92 @@ def perpendicular_from_point_off_line(s: Scene, line_AB: Line, point_C: Dot, tim
 
     s.play(FadeOut(point_H, circle_EFG, point_D), run_time=dt)
     return line_CH
+
+def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line, cong_num: tuple = (0, 0, 0), positive_solution: bool = True, time = 47) ->  VGroup:
+    """Will construct a triangle using I.22 from three given lines on a base line in at most 47 operations. It is possible fewer operations
+        are required (at least 15), see cut_to_line
+    
+    Parameters
+    ----------
+    s :
+        the scene
+    base_line :
+        the line to build the triangle on
+    line_A :
+        the first line
+    line_B :
+        the second line
+    line_C :
+        the third line
+    cong_num :
+        a tuple of three integers being the congrunce mark on its repspective line
+    positive_solution :
+        the parity of the construction
+    time :
+        how long it takes    
+    """
+    dt = time/47
+
+    base_line = Line(base_line.get_start(), base_line.get_start() + base_line.get_unit_vector()*(line_A.get_length() + line_B.get_length() + line_C.get_length()))
+
+    t1 = dt*3 if False not in np.isclose(base_line.get_start(), line_A.get_start()) else dt*14
+    mline_DF, point_F = cut_line_to_length(s, base_line, line_A, cong_num=cong_num[0], time=t1)
+
+    line_F = Line(point_F.get_center(), base_line.get_end())
+    t2 = dt*3 if False not in np.isclose(line_F.get_start(), line_B.get_start()) else dt*14
+    mline_FG, point_G = cut_line_to_length(s, line_F, line_B, cong_num=cong_num[1], time=t2)
+    s.play(Create(mline_FG))
+
+    line_G = Line(point_G.get_center(), base_line.get_end())
+    t3 = dt*3 if False not in np.isclose(line_G.get_start(), line_C.get_start()) else dt*14
+    mline_GH, point_H = cut_line_to_length(s, line_G, line_C, cong_num=cong_num[2], time=t3)
+
+    circle_DKL = Circle(line_A.get_length(), color=WHITE).shift(point_F.get_center())
+    s.play(Create(circle_DKL))
+
+    circle_KHL = Circle(line_C.get_length(), color=WHITE).shift(point_G.get_center())
+    s.play(Create(circle_KHL))
+
+    x1 = point_F.get_center()[0]
+    x2 = point_G.get_center()[0]
+    y1 = point_F.get_center()[1]
+    y2 = point_G.get_center()[1]
+    r1 = line_A.get_length()
+    r2 = line_C.get_length()
+
+    if y1 - y2 == 0:
+        kx = ((r1**2 - r2**2) - (x1**2 - x2**2))/-1/(x1 - x2)
+        ly = kx
+        ky = (2*y2 + np.sqrt(4*y2**2 - 4*(y2**2 + kx**2 - 2*kx*x2 + x2**2 - r2**2)))/2
+        ly = (2*y2 - np.sqrt(4*y2**2 - 4*(y2**2 + kx**2 - 2*kx*x2 + x2**2 - r2**2)))/2
+    else:
+        m = (x2 - x1)/(y1 - y2)
+        b = -1/2/(y1 - y2)*((r1**2 - r2**2) - (x1**2 - x2**2) - (y1**2 - y2**2))
+        A = 1 + m**2
+        B = -2*x1 + 2*b*m - 2*m*y1
+        C = x1**2 + b**2 - 2*b*y1 +  y1**2 - r1**2
+        kx = (-B + np.sqrt(B**2 - 4*A*C))/2/A
+        lx = (-B - np.sqrt(B**2 - 4*A*C))/2/A
+        ky = m*kx + b
+        ly = m*lx + b
+    
+    if positive_solution:
+        mline_FK = MarkedLine(Line(point_F.get_center(), np.array([kx, ky, 0])), cong_mark_num=cong_num[0])
+        s.play(Create(mline_FK))
+
+        mline_GK = MarkedLine(Line(point_G.get_center(), np.array([kx, ky, 0])), cong_mark_num=cong_num[2])
+        s.play(Create(mline_GK))
+
+    else:
+        mline_FL = MarkedLine(Line(point_F.get_center(), np.array([lx, ly, 0])), cong_mark_num=cong_num[0])
+        s.play(Create(mline_FL))
+
+        mline_GL = MarkedLine(Line(point_G.get_center(), np.array([lx, ly, 0])), cong_mark_num=cong_num[2])
+        s.play(Create(mline_GL))
+
+    s.play(FadeOut(circle_DKL, circle_KHL, point_G, point_F, point_H))
+
+    if positive_solution:
+        return VGroup(mline_FK, mline_GK, mline_FG)
+    else:
+        return VGroup(mline_FL, mline_GL, mline_FG)

@@ -1,11 +1,16 @@
 from manim import *
 from shapes import MarkedLine
-from constructions import bisect_line
+from constructions import triangle
 from constant_suppliments import HOT_PINK
 
 class Temp(Scene):
     def construct(self):
-        line_AB = Line(3*LEFT + 2*DOWN, 2*RIGHT)
-        self.play(Create(line_AB)); self.wait()
+        line_A = Line(2*RIGHT, 4*RIGHT)
+        line_B = Line(2*RIGHT, 3.25*RIGHT)
+        line_C = Line(2*RIGHT, 3*RIGHT)
 
-        bisect_line(self, line_AB, time=5); self.wait()
+        line_base = Line(4*LEFT, ORIGIN)
+
+        self.play(Create(line_A), Create(line_B), Create(line_C), Create(line_base))
+
+        triangle(self, line_base, line_A, line_B, line_C, (1, 2, 3), True, 20); self.wait()
