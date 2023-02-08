@@ -1,16 +1,15 @@
 from manim import *
 from shapes import MarkedLine
-from constructions import triangle
+from constructions import equal_angle
 from constant_suppliments import HOT_PINK
 
 class Temp(Scene):
     def construct(self):
-        line_A = Line(2*RIGHT, 4*RIGHT)
-        line_B = Line(2*RIGHT, 3.25*RIGHT)
-        line_C = Line(2*RIGHT, 3*RIGHT)
+        line_AB = Line(RIGHT, 2*RIGHT + UP)
+        line_AC = Line(RIGHT, 2*RIGHT + DOWN)
 
         line_base = Line(4*LEFT, ORIGIN)
 
-        self.play(Create(line_A), Create(line_B), Create(line_C), Create(line_base))
+        self.play(Create(line_AB), Create(line_AC), Create(line_base))
 
-        triangle(self, line_base, line_A, line_B, line_C, (1, 2, 3), True, 20); self.wait()
+        equal_angle(self, line_base, line_base.get_start(), (line_AB, line_AC), None, True, 20); self.wait()

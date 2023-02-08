@@ -388,7 +388,7 @@ def perpendicular_from_point_off_line(s: Scene, line_AB: Line, point_C: Dot, tim
     s.play(FadeOut(point_H, circle_EFG, point_D), run_time=dt)
     return line_CH
 
-def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line, cong_num: tuple = (0, 0, 0), positive_solution: bool = True, time = 47) ->  VGroup:
+def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line, cong_num: tuple = (0, 0, 0), positive_solution: bool = True, from_point: bool = False, time = 47) ->  VGroup:
     """Will construct a triangle using I.22 from three given lines on a base line in at most 47 operations. It is possible fewer operations
         are required (at least 15), see cut_to_line
     
@@ -408,41 +408,69 @@ def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line
         a tuple of three integers being the congrunce mark on its repspective line
     positive_solution :
         the parity of the construction
+    from_point :
+        will construct the triangle with the base on the start of the base line
     time :
         how long it takes    
     """
     dt = time/47
 
-    base_line = Line(base_line.get_start(), base_line.get_start() + base_line.get_unit_vector()*(line_A.get_length() + line_B.get_length() + line_C.get_length()))
+    if from_point == False:
+        base_line = Line(base_line.get_start(), base_line.get_start() + base_line.get_unit_vector()*(line_A.get_length() + line_B.get_length() + line_C.get_length()))
 
-    t1 = dt*3 if False not in np.isclose(base_line.get_start(), line_A.get_start()) else dt*14
-    mline_DF, point_F = cut_line_to_length(s, base_line, line_A, cong_num=cong_num[0], time=t1)
+        t1 = dt*3 if False not in np.isclose(base_line.get_start(), line_A.get_start()) else dt*14
+        mline_DF, point_F = cut_line_to_length(s, base_line, line_A, cong_num=cong_num[0], time=t1)
 
-    line_F = Line(point_F.get_center(), base_line.get_end())
-    t2 = dt*3 if False not in np.isclose(line_F.get_start(), line_B.get_start()) else dt*14
-    mline_FG, point_G = cut_line_to_length(s, line_F, line_B, cong_num=cong_num[1], time=t2)
-    s.play(Create(mline_FG))
+        line_F = Line(point_F.get_center(), base_line.get_end())
+        t2 = dt*3 if False not in np.isclose(line_F.get_start(), line_B.get_start()) else dt*14
+        mline_FG, point_G = cut_line_to_length(s, line_F, line_B, cong_num=cong_num[1], time=t2)
+        s.play(Create(mline_FG))
 
-    line_G = Line(point_G.get_center(), base_line.get_end())
-    t3 = dt*3 if False not in np.isclose(line_G.get_start(), line_C.get_start()) else dt*14
-    mline_GH, point_H = cut_line_to_length(s, line_G, line_C, cong_num=cong_num[2], time=t3)
+        line_G = Line(point_G.get_center(), base_line.get_end())
+        t3 = dt*3 if False not in np.isclose(line_G.get_start(), line_C.get_start()) else dt*14
+        mline_GH, point_H = cut_line_to_length(s, line_G, line_C, cong_num=cong_num[2], time=t3)
 
-    circle_DKL = Circle(line_A.get_length(), color=WHITE).shift(point_F.get_center())
-    s.play(Create(circle_DKL))
+        circle_DKL = Circle(line_A.get_length(), color=WHITE).shift(point_F.get_center())
+        s.play(Create(circle_DKL))
 
-    circle_KHL = Circle(line_C.get_length(), color=WHITE).shift(point_G.get_center())
-    s.play(Create(circle_KHL))
+        circle_KHL = Circle(line_C.get_length(), color=WHITE).shift(point_G.get_center())
+        s.play(Create(circle_KHL))
 
-    x1 = point_F.get_center()[0]
-    x2 = point_G.get_center()[0]
-    y1 = point_F.get_center()[1]
-    y2 = point_G.get_center()[1]
-    r1 = line_A.get_length()
-    r2 = line_C.get_length()
+        x1 = point_F.get_center()[0]
+        x2 = point_G.get_center()[0]
+        y1 = point_F.get_center()[1]
+        y2 = point_G.get_center()[1]
+        r1 = line_A.get_length()
+        r2 = line_C.get_length()
+    
+    else:
+        t1 = dt*3 if False not in np.isclose(base_line.get_start(), line_A.get_start()) else dt*14
+        mline_DF, point_F = cut_line_to_length(s, base_line, line_A, cong_num=cong_num[0], time=t1)
+        s.play(Create(mline_DF))
+
+        t2 = dt*3 if False not in np.isclose(base_line.get_start(), line_B.get_start()) else dt*14
+        mline_FG, point_G = cut_line_to_length(s, base_line, line_B, cong_num=cong_num[1], time=t2)
+
+        line_G = Line(point_F.get_center(), base_line.get_start())
+        t3 = dt*3 if False not in np.isclose(line_G.get_start(), line_C.get_start()) else dt*14
+        mline_GH, point_H = cut_line_to_length(s, line_G, line_C, cong_num=cong_num[2], time=t3)
+
+        circle_KHL = Circle(line_B.get_length(), color=WHITE).shift(base_line.get_start())
+        s.play(Create(circle_KHL))
+
+        circle_DKL = Circle(line_C.get_length(), color=WHITE).shift(point_F.get_center())
+        s.play(Create(circle_DKL))
+
+        x1 = base_line.get_start()[0]
+        x2 = point_F.get_center()[0]
+        y1 = base_line.get_start()[1]
+        y2 = point_F.get_center()[1]
+        r1 = line_B.get_length()
+        r2 = line_C.get_length()
 
     if y1 - y2 == 0:
-        kx = ((r1**2 - r2**2) - (x1**2 - x2**2))/-1/(x1 - x2)
-        ly = kx
+        kx = ((r1**2 - r2**2) - (x1**2 - x2**2))/(2*x2 - 2*x1)
+        lx = kx
         ky = (2*y2 + np.sqrt(4*y2**2 - 4*(y2**2 + kx**2 - 2*kx*x2 + x2**2 - r2**2)))/2
         ly = (2*y2 - np.sqrt(4*y2**2 - 4*(y2**2 + kx**2 - 2*kx*x2 + x2**2 - r2**2)))/2
     else:
@@ -460,14 +488,20 @@ def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line
         mline_FK = MarkedLine(Line(point_F.get_center(), np.array([kx, ky, 0])), cong_mark_num=cong_num[0])
         s.play(Create(mline_FK))
 
-        mline_GK = MarkedLine(Line(point_G.get_center(), np.array([kx, ky, 0])), cong_mark_num=cong_num[2])
+        if from_point == False:
+            mline_GK = MarkedLine(Line(point_G.get_center(), np.array([kx, ky, 0])), cong_mark_num=cong_num[2])
+        else:
+            mline_GK = MarkedLine(Line(base_line.get_start(), np.array([kx, ky, 0])), cong_mark_num=cong_num[2])
         s.play(Create(mline_GK))
 
     else:
         mline_FL = MarkedLine(Line(point_F.get_center(), np.array([lx, ly, 0])), cong_mark_num=cong_num[0])
         s.play(Create(mline_FL))
 
-        mline_GL = MarkedLine(Line(point_G.get_center(), np.array([lx, ly, 0])), cong_mark_num=cong_num[2])
+        if from_point == False:
+            mline_GL = MarkedLine(Line(point_G.get_center(), np.array([lx, ly, 0])), cong_mark_num=cong_num[2])
+        else:
+            mline_GL = MarkedLine(Line(base_line.get_start(), np.array([lx, ly, 0])), cong_mark_num=cong_num[2])
         s.play(Create(mline_GL))
 
     s.play(FadeOut(circle_DKL, circle_KHL, point_G, point_F, point_H))
@@ -476,3 +510,35 @@ def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line
         return VGroup(mline_FK, mline_GK, mline_FG)
     else:
         return VGroup(mline_FL, mline_GL, mline_FG)
+    
+def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, positive_solution: bool = True, time = 49) -> tuple:
+    """will construct an angle on a point on a line equal to a the angle of angle using I.23 in 49 operations
+
+    Parameters
+    ----------
+    s :
+        The Scene
+    line_AB :
+        The line to construct the angle on
+    point_A :
+        The point to construct the angle on
+    angle :
+        A tuple of two lines forming an angle. Assumes their starts are coincident
+    positive_solution :
+        The parity of the solution
+    time :
+        how long it takes
+
+    Returns
+    -------
+    The line that makes the angle and the angle mark if any
+    """
+    dt = time/49
+    line_AB = Line(point_A, line_AB.get_end())
+    line_A = angle[0]
+    line_B = angle[1]
+    line_C = Line(line_A.get_end(), line_B.get_end())
+    s.play(Create(line_C), run_time=dt)
+    triangle_AFG = triangle(s, line_AB, line_A, line_B, line_C, (0, 0, 0), positive_solution, True, dt*47)
+    s.play(FadeOut(line_C, triangle_AFG[2], triangle_AFG[0]), run_time=dt)
+    return triangle_AFG[1]
