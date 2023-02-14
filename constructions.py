@@ -424,17 +424,17 @@ def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line
         line_F = Line(point_F.get_center(), base_line.get_end())
         t2 = dt*3 if False not in np.isclose(line_F.get_start(), line_B.get_start()) else dt*14
         mline_FG, point_G = cut_line_to_length(s, line_F, line_B, cong_num=cong_num[1], time=t2)
-        s.play(Create(mline_FG))
+        s.play(Create(mline_FG), run_time=dt)
 
         line_G = Line(point_G.get_center(), base_line.get_end())
         t3 = dt*3 if False not in np.isclose(line_G.get_start(), line_C.get_start()) else dt*14
         mline_GH, point_H = cut_line_to_length(s, line_G, line_C, cong_num=cong_num[2], time=t3)
 
         circle_DKL = Circle(line_A.get_length(), color=WHITE).shift(point_F.get_center())
-        s.play(Create(circle_DKL))
+        s.play(Create(circle_DKL), run_time=dt)
 
         circle_KHL = Circle(line_C.get_length(), color=WHITE).shift(point_G.get_center())
-        s.play(Create(circle_KHL))
+        s.play(Create(circle_KHL), run_time=dt)
 
         x1 = point_F.get_center()[0]
         x2 = point_G.get_center()[0]
@@ -446,7 +446,7 @@ def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line
     else:
         t1 = dt*3 if False not in np.isclose(base_line.get_start(), line_A.get_start()) else dt*14
         mline_DF, point_F = cut_line_to_length(s, base_line, line_A, cong_num=cong_num[0], time=t1)
-        s.play(Create(mline_DF))
+        s.play(Create(mline_DF), run_time=dt)
 
         t2 = dt*3 if False not in np.isclose(base_line.get_start(), line_B.get_start()) else dt*14
         mline_FG, point_G = cut_line_to_length(s, base_line, line_B, cong_num=cong_num[1], time=t2)
@@ -456,10 +456,10 @@ def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line
         mline_GH, point_H = cut_line_to_length(s, line_G, line_C, cong_num=cong_num[2], time=t3)
 
         circle_KHL = Circle(line_B.get_length(), color=WHITE).shift(base_line.get_start())
-        s.play(Create(circle_KHL))
+        s.play(Create(circle_KHL), run_time=dt)
 
         circle_DKL = Circle(line_C.get_length(), color=WHITE).shift(point_F.get_center())
-        s.play(Create(circle_DKL))
+        s.play(Create(circle_DKL), run_time=dt)
 
         x1 = base_line.get_start()[0]
         x2 = point_F.get_center()[0]
@@ -486,32 +486,35 @@ def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line
     
     if positive_solution:
         mline_FK = MarkedLine(Line(point_F.get_center(), np.array([kx, ky, 0])), cong_mark_num=cong_num[0])
-        s.play(Create(mline_FK))
+        s.play(Create(mline_FK), run_time=dt)
 
         if from_point == False:
             mline_GK = MarkedLine(Line(point_G.get_center(), np.array([kx, ky, 0])), cong_mark_num=cong_num[2])
         else:
             mline_GK = MarkedLine(Line(base_line.get_start(), np.array([kx, ky, 0])), cong_mark_num=cong_num[2])
-        s.play(Create(mline_GK))
+        s.play(Create(mline_GK), run_time=dt)
 
     else:
         mline_FL = MarkedLine(Line(point_F.get_center(), np.array([lx, ly, 0])), cong_mark_num=cong_num[0])
-        s.play(Create(mline_FL))
+        s.play(Create(mline_FL), run_time=dt)
 
         if from_point == False:
             mline_GL = MarkedLine(Line(point_G.get_center(), np.array([lx, ly, 0])), cong_mark_num=cong_num[2])
         else:
             mline_GL = MarkedLine(Line(base_line.get_start(), np.array([lx, ly, 0])), cong_mark_num=cong_num[2])
-        s.play(Create(mline_GL))
+        s.play(Create(mline_GL), run_time=dt)
 
-    s.play(FadeOut(circle_DKL, circle_KHL, point_G, point_F, point_H))
+    if mline_DF in s.mobjects:
+        s.play(FadeOut(mline_DF, circle_DKL, circle_KHL, point_G, point_F, point_H), run_time=dt)
+    else:
+        s.play(FadeOut(circle_DKL, circle_KHL, point_G, point_F, point_H), run_time=dt)
 
     if positive_solution:
         return VGroup(mline_FK, mline_GK, mline_FG)
     else:
         return VGroup(mline_FL, mline_GL, mline_FG)
     
-def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, positive_solution: bool = True, time = 49) -> tuple:
+def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, positive_solution: bool = True, time: float = 49) -> MarkedLine:
     """will construct an angle on a point on a line equal to a the angle of angle using I.23 in 49 operations
 
     Parameters
@@ -531,7 +534,7 @@ def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, posi
 
     Returns
     -------
-    The line that makes the angle and the angle mark if any
+    The line that makes the angle
     """
     dt = time/49
     line_AB = Line(point_A, line_AB.get_end())
@@ -542,3 +545,33 @@ def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, posi
     triangle_AFG = triangle(s, line_AB, line_A, line_B, line_C, (0, 0, 0), positive_solution, True, dt*47)
     s.play(FadeOut(line_C, triangle_AFG[2], triangle_AFG[0]), run_time=dt)
     return triangle_AFG[1]
+
+def parallel_line(s: Scene, point_A: np.ndarray, line_BC: Line, positive_solution: bool = True, parall_mark_num: int = 0, time: float = 53) -> MarkedLine:
+    """Will construct a line parallel to line_BC, through point_A using I.31 in 53 operations
+    
+    Parameters
+    ----------
+    s :
+        The scene
+    point_A :
+        The point to draw the parallel line through
+    line_BC :
+        The direction the parallel line goes in
+    positive_solution :
+        The parity of the solution (one is probably wrong :( )
+    parall_mark_num :
+        The number of ticks to make
+    time :
+        How long to take
+    """
+    dt = time / 53
+
+    point_D = Dot(line_BC.get_start() + line_BC.get_unit_vector()*0.25*line_BC.get_length())
+    s.play(Create(point_D), run_time=dt)
+    line_AD = Line(point_A, point_D.get_center())
+    s.play(Create(line_AD), run_time=dt)
+    line_AE = equal_angle(s, line_AD, point_A, (Line(point_D.get_center(), line_AD.get_start()), Line(point_D.get_center(), line_BC.get_end())), positive_solution, dt*49)
+    mline_EF = MarkedLine(Line(line_AE.get_end(), line_AE.get_start() + line_AE.get_unit_vector()*-1*line_AE.get_length()), 0, parall_mark_num)
+    s.play(Create(mline_EF), run_time=dt)
+    s.play(FadeOut(line_AE, line_AD, point_D), run_time=dt)
+    return mline_EF

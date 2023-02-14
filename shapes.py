@@ -93,6 +93,7 @@ class MarkedLine(VMobject):
                     stroke_width = mark_width
                 ))
                 start_to_next_mark += mark_spacing*(end - start)
+            length = 2*length
             for i in range(num_ten_arrows):
                 self.add(Line(
                     start = start + start_to_next_mark + self.rot(PI/2 + angle_main_line)@(length*RIGHT),
