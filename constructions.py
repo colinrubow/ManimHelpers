@@ -563,6 +563,10 @@ def parallel_line(s: Scene, point_A: np.ndarray, line_BC: Line, positive_solutio
         The number of ticks to make
     time :
         How long to take
+
+    Returns
+    -------
+    The mline that is parallel
     """
     dt = time / 53
 
