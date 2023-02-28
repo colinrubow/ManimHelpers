@@ -546,7 +546,7 @@ def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, posi
     s.play(FadeOut(line_C, triangle_AFG[2], triangle_AFG[0]), run_time=dt)
     return triangle_AFG[1]
 
-def parallel_line(s: Scene, point_A: np.ndarray, line_BC: Line, positive_solution: bool = True, parall_mark_num: int = 0, time: float = 53) -> MarkedLine:
+def parallel_line(s: Scene, point_A: np.ndarray, line_BC: Line, to_point: np.ndarray = None, positive_solution: bool = True, parall_mark_num: int = 0, time: float = 53) -> MarkedLine:
     """Will construct a line parallel to line_BC, through point_A using I.31 in 53 operations
     
     Parameters
@@ -557,6 +557,8 @@ def parallel_line(s: Scene, point_A: np.ndarray, line_BC: Line, positive_solutio
         The point to draw the parallel line through
     line_BC :
         The direction the parallel line goes in
+    to_point :
+        The point to draw the parallel line to
     positive_solution :
         The parity of the solution (one is probably wrong :( )
     parall_mark_num :
@@ -575,7 +577,10 @@ def parallel_line(s: Scene, point_A: np.ndarray, line_BC: Line, positive_solutio
     line_AD = Line(point_A, point_D.get_center())
     s.play(Create(line_AD), run_time=dt)
     line_AE = equal_angle(s, line_AD, point_A, (Line(point_D.get_center(), line_AD.get_start()), Line(point_D.get_center(), line_BC.get_end())), positive_solution, dt*49)
-    mline_EF = MarkedLine(Line(line_AE.get_end(), line_AE.get_start() + line_AE.get_unit_vector()*-1*line_AE.get_length()), 0, parall_mark_num)
+    if to_point is None:
+        mline_EF = MarkedLine(Line(line_AE.get_end(), line_AE.get_start() + line_AE.get_unit_vector()*-1*line_AE.get_length()), 0, parall_mark_num)
+    else:
+        mline_EF = MarkedLine(Line(point_A, to_point), 0, parall_mark_num)
     s.play(Create(mline_EF), run_time=dt)
     s.play(FadeOut(line_AE, line_AD, point_D), run_time=dt)
     return mline_EF
