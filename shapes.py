@@ -6,10 +6,8 @@ class MarkedLine(VMobject):
     
     Parameters
     ----------
-    start :
-        where the line starts
-    end :
-        where the line ends
+    line :
+        The line
     cong_mark_num :
         the number of ticks on the line
     parrel_mark_num :
