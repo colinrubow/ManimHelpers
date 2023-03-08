@@ -307,7 +307,7 @@ def perpendicular_from_point_off_line(s: Scene, line_AB: Line, point_C: Point, t
     s.play(FadeOut(point_H, circle_EFG), run_time=dt)
     return line_CH
 
-def triangle(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line, time = 47) ->  tuple:
+def triangle_from_lines(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line, time = 47) ->  tuple:
     """Will construct a triangle using I.22 from three given lines on a base line in at most 47 operations. It is possible fewer operations
         are required (at least 15)
     
@@ -421,7 +421,7 @@ def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, time
     s.play(FadeOut(line_AY), Create(point_Y), run_time=dt)
 
     line_YB = Line(point_Y.get_center(), line_AB.get_end())
-    line_FA, line_AG, line_FG = triangle(s, line_YB, line_A, line_B, line_C, 47*dt)
+    line_FA, line_AG, line_FG = triangle_from_lines(s, line_YB, line_A, line_B, line_C, 47*dt)
 
     line_GA = Line(line_AG.get_end(), line_AG.get_start())
 
@@ -471,3 +471,198 @@ def parallel_line(s: Scene, point_A: np.ndarray, line_BC: Line, time: float = 68
     s.play(FadeOut(line_AD, point_D), run_time=dt)
     return line_EF
 
+def parallelogram_from_angle_and_triangle(s: Scene, angle: tuple, triangle: tuple, time: float = 219) -> tuple:
+    """Constructs a prallelogram on an angle equal to the given triangle using I.42 in 219 operations.
+        Assumes that half the third line of triangle will be the base of the parallelogram
+    
+    Parameters
+    ----------
+    s :
+        The Scene
+    angle :
+        A tuple containing the two lines assuming the starts are coincident
+    triangle :
+        A tuple of three lines containing the triangle
+    time :
+        how long it takes
+    
+    Returns
+    -------
+    a tuple of the four lines making the parallelogram
+    """
+    dt = time / 219
+
+    line_AB = triangle[0]
+    line_AC = triangle[1]
+    line_BC = triangle[2]
+    line_BC_bisector = bisect_line(s, line_BC, dt*16)
+    point_E = Dot(line_BC_bisector.get_end())
+    s.play(Create(point_E), FadeOut(line_BC_bisector), run_time=dt)
+    
+    line_CE = Line(line_AC.get_end(), point_E.get_center())
+    s.add(line_CE)
+    line_EF = equal_angle(s, line_CE, line_CE.get_end(), angle, 64*dt)
+
+    line_AG = parallel_line(s, line_AB.get_start(), line_BC, 68*dt)
+
+    line_CG = parallel_line(s, line_BC.get_end(), line_EF, 68*dt)
+
+    point_G = line_intersection([line_AG.get_start(), line_AG.get_end()], [line_CG.get_start(), line_CG.get_end()])
+    point_F = line_intersection([line_AG.get_start(), line_AG.get_end()], [line_EF.get_start(), line_EF.get_end()])
+
+    s.play(
+        ReplacementTransform(line_AG, Line(line_AG.get_start(), point_G)),
+        ReplacementTransform(line_EF, Line(line_EF.get_start(), point_F)),
+        ReplacementTransform(line_CG, Line(line_CG.get_start(), point_G)),
+        run_time=dt)
+    
+    line_FG = Line(point_F, point_G)
+    s.add(line_FG)
+
+    line_EC = Line(line_CE.get_end(), line_CE.get_start())
+
+    s.play(FadeOut(point_E), run_time=dt)
+
+    return line_EC, line_CG, line_FG, line_EF
+
+def parallelogram_from_angle_and_triangle_on_line(s: Scene, angle: tuple, triangle: tuple, line_AB: Line, time: float = 409) -> tuple:
+    """Will construct a parallelogram from an angle and triangle on a given line using I.44 in 409 operations
+    
+    Parameters
+    ----------
+    s :
+        The Scene
+    angle :
+        A tuple of two lines whose starts are coincident
+    triangle :
+        A tuple of three lines making a triangle
+    line_AB :
+        The line to build the parallelogram on
+    time :
+        how long to take
+    
+    Returns
+    -------
+    A tuple of the three remaining lines that make the parallelogram
+    """
+    dt = time / 409
+
+    line_A_prime_E_prime = Line(line_AB.get_start() - line_AB.get_unit_vector()*triangle[0].get_length(), line_AB.get_end() + line_AB.get_unit_vector()*(triangle[1].get_length() + triangle[2].get_length()))
+    s.play(Create(line_A_prime_E_prime), run_time=dt)
+    line_A_prime, line_B_prime, line_C_prime = triangle_from_lines(s, line_A_prime_E_prime, triangle[0], triangle[1], triangle[2], 47*dt)
+
+    line_BE, line_EF, line_GF, line_BG = parallelogram_from_angle_and_triangle(s, angle, (line_A_prime, line_B_prime, line_C_prime), 219*dt)
+
+    s.play(FadeOut(line_A_prime, line_B_prime, line_C_prime, line_A_prime_E_prime), run_time=dt)
+
+    line_AH = parallel_line(s, line_AB.get_start(), line_EF, 68*dt)
+
+    point_H = line_intersection([line_AH.get_start(), line_AH.get_end()], [line_GF.get_start(), line_GF.get_end()])
+
+    line_GH = Line(line_BG.get_end(), point_H)
+    s.play(Create(line_GH), ReplacementTransform(line_AH, Line(line_AH.get_start(), point_H)), run_time=dt)
+
+    line_HB = Line(point_H, line_AB.get_end())
+    s.play(Create(line_HB), run_time=dt)
+
+    point_K = line_intersection([line_HB.get_start(), line_HB.get_end()], [line_EF.get_start(), line_EF.get_end()])
+
+    line_KM = parallel_line(s, point_K, line_GF, 68*dt)
+
+    point_M = line_intersection([line_KM.get_start(), line_KM.get_end()], [line_BG.get_start(), line_BG.get_end()])
+    line_BM = Line(line_AB.get_end(), point_M)
+
+    s.play(ReplacementTransform(line_KM, Line(line_KM.get_start(), point_M)), Create(line_BM), run_time=dt)
+
+    point_L = line_intersection([line_KM.get_start(), line_KM.get_end()], [line_AH.get_start(), line_AH.get_end()])
+
+    line_ML = Line(line_BM.get_end(), point_L)
+    line_AL = Line(line_AB.get_start(), point_L)
+
+    s.play(Create(line_ML), Create(line_AL), run_time=dt)
+
+    s.play(FadeOut(line_KM, line_HB, line_GH, line_AH, line_BE, line_EF, line_GF, line_BG), run_time=dt)
+
+    return line_AL, line_ML, line_BM
+
+def parallelogram_from_angle_and_rectilineal_figure(s: Scene, angle: tuple, rect_fig: tuple, line_KF: Line, time: float = 820) -> tuple:
+    """Will construct a parallelogram from an angle and rectilineal figure from I.45 in 820 operations
+    
+    Parameters
+    ----------
+    s :
+        The Scene
+    angle : 
+        a tuple of two lines whose start is coincident
+    rect_fig :
+        A tuple of four lines making a rectilineal figure in clockwise order
+    line_KF :
+        The line to draw the parallelogram on
+    time :
+        The time is takes
+    
+    Returns
+    -------
+    a tuple of the other three Lines that make up the parallelogram in clockwise order
+    """
+
+    dt = time / 820
+
+    line_AB, line_BC, line_CD, line_DA = rect_fig
+
+    line_DB = Line(line_CD.get_end(), line_BC.get_start())
+    s.play(Create(line_DB), run_time=dt)
+
+    line_KH, line_GH, line_FG = parallelogram_from_angle_and_triangle_on_line(s, angle, (line_AB, line_DB, line_DA), line_KF, 409*dt)
+
+    line_HM, line_LM, line_GL = parallelogram_from_angle_and_triangle_on_line(s, angle, (line_DB, line_BC, line_CD), line_GH, 409*dt)
+
+    line_KM = Line(line_KH.get_start(), line_HM.get_end())
+    line_FL = Line(line_KF.get_end(), line_LM.get_start())
+    s.add(line_KM, line_FL)
+
+    s.play(FadeOut(line_GH, line_DB, line_FG, line_GL, line_KH, line_HM), run_time=dt)
+
+    return line_KM, line_LM, line_FL
+
+def square_on_line(s: Scene, line_AB, time: float = 150) -> tuple:
+    """Will construct a square on a Line using I.46 in _ operations
+    
+    Parameters
+    ----------
+    s :
+        The Scene
+    line_AB :
+        The first line of the square
+    time :
+        How long it takes
+    
+    Returns
+    -------
+    a tuple of the three remaining lines of the square in clockwise order
+    """
+
+    dt = time / 150
+
+    line_AC = perpendicular_from_point_on_line(s, line_AB, line_AB.get_start(), 9*dt)
+
+    point_D = Dot(cut_coincident_line_to_length(s, line_AC, line_AB, 2*dt))
+    s.play(Create(point_D), run_time=dt)
+
+    line_AD = Line(line_AB.get_start(), point_D.get_center())
+
+    line_DE = parallel_line(s, line_AD.get_end(), line_AB, 68*dt)
+
+    line_BE = parallel_line(s, line_AB.get_end(), line_AD, 68*dt)
+
+    point_E = line_intersection([line_DE.get_start(), line_DE.get_end()], [line_BE.get_start(), line_BE.get_end()])
+
+    s.play(
+        ReplacementTransform(line_DE, Line(line_DE.get_start(), point_E)),
+        ReplacementTransform(line_BE, Line(line_BE.get_start(), point_E)),
+        run_time=dt
+    )
+
+    s.play(FadeOut(line_AC, point_D), run_time=dt)
+
+    return line_BE, line_DE, line_AD
