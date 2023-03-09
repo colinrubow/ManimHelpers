@@ -14,7 +14,7 @@ def equilateral_triangle(s: Scene, base_AB: Line, time: float = 5) -> tuple:
 
     Returns
     -------
-    The two lines that make up the rest of the triangle
+    The two lines that make up the rest of the triangle, in counterclockwise order
     """
     dt = time/5
     r = base_AB.get_length()
@@ -33,7 +33,7 @@ def equilateral_triangle(s: Scene, base_AB: Line, time: float = 5) -> tuple:
 
     s.play(FadeOut(circle_BCD, circle_ACE), run_time=dt)
 
-    return line_AC, line_BC
+    return line_BC, Line(line_AC.get_end(), line_AC.get_start())
 
 def point_to_line(s: Scene, point_A: np.ndarray, line_BC: Line, time: float = 11) -> Line:
     """Will construct a line from a point equal to a given line using prop 1.2 with 11 operations
@@ -139,7 +139,7 @@ def cut_coincident_line_to_length(s: Scene, greater_line: Line, lesser_line: Lin
     s.play(FadeOut(circle), run_time=dt)
     return point
 
-def bisect_angle(s: Scene, line_AB: Line, line_AC: Line, time: float = 10) -> Line:
+def bisect_angle(s: Scene, line_AB: Line, line_CA: Line, time: float = 10) -> Line:
     """Cuts an angle in half. Assumes the line that cuts will start at line_1.get_start() and line_2.get_start()
         and will be in same direction as both lines. Performs using I.9 in 10 operations.
         
@@ -158,6 +158,7 @@ def bisect_angle(s: Scene, line_AB: Line, line_AC: Line, time: float = 10) -> Li
     -------
     the Line that bisects the angle
     """
+    line_AC = Line(line_CA.get_end(), line_CA.get_start())
     dt = time / 10
 
     point_D = line_AB.get_start() + line_AB.get_unit_vector()*0.5*line_AB.get_length()
@@ -308,8 +309,7 @@ def perpendicular_from_point_off_line(s: Scene, line_AB: Line, point_C: Point, t
     return line_CH
 
 def triangle_from_lines(s: Scene, base_line: Line, line_A: Line, line_B: Line, line_C: Line, time = 47) ->  tuple:
-    """Will construct a triangle using I.22 from three given lines on a base line in at most 47 operations. It is possible fewer operations
-        are required (at least 15)
+    """Will construct a triangle using I.22 from three given lines on a base line in 47 operations.
     
     Parameters
     ----------
@@ -381,7 +381,7 @@ def triangle_from_lines(s: Scene, base_line: Line, line_A: Line, line_B: Line, l
 
     s.play(FadeOut(circle_KLH, circle_DKL, point_H, point_G, point_F), run_time=dt)
 
-    return line_KF, line_FG, line_KG
+    return line_KF, line_FG, Line(line_KG.get_end(), line_KG.get_start())
     
 def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, time: float = 64) -> Line:
     """will construct an angle on a point on a line equal to a the angle of angle using I.23 in 64 operations
@@ -395,13 +395,13 @@ def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, time
     point_A :
         The point to construct the angle on
     angle :
-        A tuple of two lines forming an angle. Assumes their starts are coincident
+        A tuple of two lines forming an angle. Assumes counterclockwise order
     time :
         how long it takes
 
     Returns
     -------
-    The line that makes the angle
+    The line that makes the angle ending on A
     """
     dt = time/64
     line_CD, line_CE = angle
@@ -423,11 +423,9 @@ def equal_angle(s: Scene, line_AB: Line, point_A: np.ndarray, angle: tuple, time
     line_YB = Line(point_Y.get_center(), line_AB.get_end())
     line_FA, line_AG, line_FG = triangle_from_lines(s, line_YB, line_A, line_B, line_C, 47*dt)
 
-    line_GA = Line(line_AG.get_end(), line_AG.get_start())
+    s.play(FadeOut(line_DE, line_AZ, point_Y, line_FG, line_AG), run_time=dt)
 
-    s.play(FadeOut(line_DE, line_AZ, point_Y, line_FG), run_time=dt)
-
-    return line_FA, line_GA
+    return line_FA
 
 def parallel_line(s: Scene, point_A: np.ndarray, line_BC: Line, time: float = 68) -> Line:
     """Will construct a line parallel to line_BC, through point_A using I.31 in 68 operations
@@ -480,9 +478,9 @@ def parallelogram_from_angle_and_triangle(s: Scene, angle: tuple, triangle: tupl
     s :
         The Scene
     angle :
-        A tuple containing the two lines assuming the starts are coincident
+        A tuple containing the two lines assuming counterclockwise order
     triangle :
-        A tuple of three lines containing the triangle
+        A tuple of three lines containing the triangle assuming counterclockwise order
     time :
         how long it takes
     
@@ -516,14 +514,14 @@ def parallelogram_from_angle_and_triangle(s: Scene, angle: tuple, triangle: tupl
         ReplacementTransform(line_CG, Line(line_CG.get_start(), point_G)),
         run_time=dt)
     
-    line_FG = Line(point_F, point_G)
-    s.add(line_FG)
+    line_GF = Line(point_G, point_F)
+    s.add(line_GF)
 
     line_EC = Line(line_CE.get_end(), line_CE.get_start())
 
     s.play(FadeOut(point_E), run_time=dt)
 
-    return line_EC, line_CG, line_FG, line_EF
+    return line_EC, line_CG, line_GF, Line(line_EF.get_end(), line_EF.get_start())
 
 def parallelogram_from_angle_and_triangle_on_line(s: Scene, angle: tuple, triangle: tuple, line_AB: Line, time: float = 409) -> tuple:
     """Will construct a parallelogram from an angle and triangle on a given line using I.44 in 409 operations
@@ -533,9 +531,9 @@ def parallelogram_from_angle_and_triangle_on_line(s: Scene, angle: tuple, triang
     s :
         The Scene
     angle :
-        A tuple of two lines whose starts are coincident
+        A tuple of two lines in counterclockwise order
     triangle :
-        A tuple of three lines making a triangle
+        A tuple of three lines making a triangle in counterclockwise order
     line_AB :
         The line to build the parallelogram on
     time :
@@ -570,20 +568,20 @@ def parallelogram_from_angle_and_triangle_on_line(s: Scene, angle: tuple, triang
     line_KM = parallel_line(s, point_K, line_GF, 68*dt)
 
     point_M = line_intersection([line_KM.get_start(), line_KM.get_end()], [line_BG.get_start(), line_BG.get_end()])
-    line_BM = Line(line_AB.get_end(), point_M)
+    line_MB = Line(point_M, line_AB.get_end())
 
     s.play(ReplacementTransform(line_KM, Line(line_KM.get_start(), point_M)), Create(line_BM), run_time=dt)
 
     point_L = line_intersection([line_KM.get_start(), line_KM.get_end()], [line_AH.get_start(), line_AH.get_end()])
 
-    line_ML = Line(line_BM.get_end(), point_L)
+    line_LM = Line(point_L, line_MB.get_start())
     line_AL = Line(line_AB.get_start(), point_L)
 
-    s.play(Create(line_ML), Create(line_AL), run_time=dt)
+    s.play(Create(line_LM), Create(line_AL), run_time=dt)
 
     s.play(FadeOut(line_KM, line_HB, line_GH, line_AH, line_BE, line_EF, line_GF, line_BG), run_time=dt)
 
-    return line_AL, line_ML, line_BM
+    return line_AL, line_LM, line_MB
 
 def parallelogram_from_angle_and_rectilineal_figure(s: Scene, angle: tuple, rect_fig: tuple, line_KF: Line, time: float = 820) -> tuple:
     """Will construct a parallelogram from an angle and rectilineal figure from I.45 in 820 operations
@@ -593,9 +591,9 @@ def parallelogram_from_angle_and_rectilineal_figure(s: Scene, angle: tuple, rect
     s :
         The Scene
     angle : 
-        a tuple of two lines whose start is coincident
+        a tuple of two lines in counterclockwise order
     rect_fig :
-        A tuple of four lines making a rectilineal figure in clockwise order
+        A tuple of four lines making a rectilineal figure in counterclockwise order
     line_KF :
         The line to draw the parallelogram on
     time :
@@ -603,7 +601,7 @@ def parallelogram_from_angle_and_rectilineal_figure(s: Scene, angle: tuple, rect
     
     Returns
     -------
-    a tuple of the other three Lines that make up the parallelogram in clockwise order
+    a tuple of the other three Lines that make up the parallelogram in counterclockwise order
     """
 
     dt = time / 820
@@ -623,7 +621,7 @@ def parallelogram_from_angle_and_rectilineal_figure(s: Scene, angle: tuple, rect
 
     s.play(FadeOut(line_GH, line_DB, line_FG, line_GL, line_KH, line_HM), run_time=dt)
 
-    return line_KM, line_LM, line_FL
+    return line_KM, Line(line_LM.get_end(), line_LM.get_start()), Line(line_FL.get_end(), line_FL.get_start())
 
 def square_on_line(s: Scene, line_AB, time: float = 150) -> tuple:
     """Will construct a square on a Line using I.46 in _ operations
@@ -665,4 +663,4 @@ def square_on_line(s: Scene, line_AB, time: float = 150) -> tuple:
 
     s.play(FadeOut(line_AC, point_D), run_time=dt)
 
-    return line_BE, line_DE, line_AD
+    return line_BE, Line(line_DE.get_end(), line_DE.get_start()), Line(line_AD.get_end(), line_AD.get_start())
